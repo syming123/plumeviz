@@ -2,6 +2,8 @@
 
 An interactive system for exploring multi-facet features of hydrothermal plumes in sonar images
 
+![](./doc/pictures/1.png)
+
 
 
 ## Requirements
