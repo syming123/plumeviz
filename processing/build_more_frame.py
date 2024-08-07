@@ -11,7 +11,7 @@ import os
 from imaging.core import reader
 
 
-def frame_interlop(frame0, frame1, frame_number):
+def frame_interpolate(frame0, frame1, frame_number):
     frames = []
     frames.append(frame0)
 
@@ -64,7 +64,7 @@ def write_file(frame, filename):
         joblib.dump(bundle, f)
 
 
-def sweep_and_interlop(file_dir, target_dir, target_date):
+def sweep_and_interpolate(file_dir, target_dir, target_date):
     files = {}
     for filename in os.listdir(file_dir):
         if filename[5:13] == target_date:
@@ -79,7 +79,7 @@ def sweep_and_interlop(file_dir, target_dir, target_date):
         key_i = keys[i]
         frame1 = reader.read_file(file_dir + '/' + files[key_i])
         dt = int(key_i[:2]) - int(key0[:2])
-        new_files = frame_interlop(frame0, frame1, dt * 6 + 1)
+        new_files = frame_interpolate(frame0, frame1, dt * 6 + 1)
         targets = targets + new_files[1:]
         key0 = key_i
         frame0 = frame1
@@ -95,6 +95,6 @@ def sweep_and_interlop(file_dir, target_dir, target_date):
 
 # build
 if __name__ == '__main__':
-    sweep_and_interlop('./data/processed', './data/interlop', '20211010')
-    sweep_and_interlop('./data/processed', './data/interlop', '20141008')
+    sweep_and_interpolate('./data/processed', './data/interpolate', '20211010')
+    sweep_and_interpolate('./data/processed', './data/interpolate', '20141008')
 
