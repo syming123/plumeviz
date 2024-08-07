@@ -6,6 +6,10 @@ An interactive system for exploring multi-facet features of hydrothermal plumes 
 
 
 
+![](./doc/pictures/2.png)
+
+
+
 ## Requirements
 
 ```text
