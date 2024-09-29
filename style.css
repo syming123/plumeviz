@@ -38,3 +38,14 @@ body {
 .content-text {
     text-align: justify;
 }
+
+.download-container {
+    width: 1000px;
+    margin: auto;
+    display: flex;
+}
+.download-item {
+    flex: 1;
+    text-align: center;
+}
+
