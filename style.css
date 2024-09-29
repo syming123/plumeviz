@@ -1,0 +1,40 @@
+body {
+    margin: 0;
+}
+
+.title-text {
+    line-height: 20px;
+    text-align: center;
+}
+.title-box {
+    width: 1000px;
+    margin: auto;
+    margin-bottom: 10px;
+}
+.author-text {
+    line-height: 15px; 
+    text-align: center;
+    display: inline-block;
+    font-weight: bold;
+}
+.author-box {
+    width: 1100px;
+    margin: auto;
+    display: flex;
+    justify-content: space-around;
+}
+.organization-text {
+    text-align: center;
+    line-height: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.content {
+    width: 1000px;
+    margin: auto;
+    margin-bottom: 10px;
+}
+.content-text {
+    text-align: justify;
+}
