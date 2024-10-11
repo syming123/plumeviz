@@ -2,4 +2,11 @@
 /.vscode
 /.vs
 /.venv
-
+data/mat/*
+data/processed/*
+!data/mat/.gitkeep
+!data/processed/.gitkeep
+common/__pycache__
+preprocessing/__pycache__
+visualization/core/__pycache__
+visualization/gui/__pycache__
