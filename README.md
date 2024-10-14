@@ -70,7 +70,11 @@ Then, run this code. Data preprocessing will be done automatically.
 
 #### Visualization
 
-Run ./visualization/main.py
+Run ./visualization/main.py 
+
+After preprocessing phase, you will get index.bin in your target path. Click File->Add button to load this index file.
+
+Note that due to the absence of doppler data for 2018-2023, it is not possible to calculate the plume velocity and heat flux for these years. Only data from 2010-2015 are available to view plume velocity and heat flux.
 
 
 
