@@ -28,6 +28,7 @@ class DataFrame:
     def __init__(self):
         self.id = -1
         self.time_str = ''
+        #self.depth = 0
         self.imaging = UniformGrid()
         self.doppler = UniformGrid()
         self.diffuse = UniformGrid()

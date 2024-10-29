@@ -10,3 +10,4 @@ common/__pycache__
 preprocessing/__pycache__
 visualization/core/__pycache__
 visualization/gui/__pycache__
+visualization/components/__pychche__

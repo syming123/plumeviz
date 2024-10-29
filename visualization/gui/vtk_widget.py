@@ -2,6 +2,7 @@ import numpy as np
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QHBoxLayout, QCheckBox
 
+from visualization.components.minimap import Minimap
 from visualization.core.viewer import Viewer
 from visualization.core import reader
 from visualization.gui.region_select_widget import RegionSelectWidget
@@ -27,12 +28,12 @@ class VTKWidget(QWidget):
 
         # 声明组件
         self.viewer = Viewer()
-        interactor = self.viewer.create_interactor()
+        self.interactor = self.viewer.create_interactor()
         self.viewer.create_light()
 
         # 添加组件
         layout.addWidget(box_widget)
-        box_layout.addWidget(interactor)
+        box_layout.addWidget(self.interactor)
 
 
         # **************************************************
@@ -74,15 +75,18 @@ class VTKWidget(QWidget):
         # **************************************************
         # 左下角地图
         # **************************************************
-        region_select_widget = RegionSelectWidget()
-        region_select_widget.setFixedSize(300, 300)
+        #region_select_widget = RegionSelectWidget()
+        #region_select_widget.setFixedSize(300, 300)
+
+        self.minimap = Minimap()
 
         layout1 = QHBoxLayout()
         layout1.addStretch(1)
         layout1.addWidget(check_boxes)
 
         layout2 = QHBoxLayout()
-        layout2.addWidget(region_select_widget)
+        #layout2.addWidget(region_select_widget)
+        layout2.addWidget(self.minimap)
         layout2.addStretch(1)
 
         layout3 = QVBoxLayout()
@@ -90,7 +94,7 @@ class VTKWidget(QWidget):
         layout3.addStretch(1)
         layout3.addLayout(layout2)
 
-        interactor.setLayout(layout3)
+        self.interactor.setLayout(layout3)
 
 
         # --------------------------------------------------
@@ -372,4 +376,9 @@ class VTKWidget(QWidget):
 
         self.repaint_frame()
 
+
+    def closeEvent(self, a0):
+        super().closeEvent(a0)
+        self.interactor.Finalize()
+        self.minimap.close()
 

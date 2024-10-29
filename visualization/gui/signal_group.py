@@ -75,6 +75,13 @@ class SignalGroup(QObject):
 
 
     # --------------------------------------------------
+    # 主视角发生旋转
+    # params: angle: float
+    # --------------------------------------------------
+    camera_rotated = pyqtSignal(float)
+
+
+    # --------------------------------------------------
     # 羽流直接体渲染
     # param: state: int
     # param: colormap_name: str

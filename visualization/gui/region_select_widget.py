@@ -18,6 +18,8 @@ from common.entity import UniformGrid
 from visualization.core import processor
 from visualization.gui.signal_group import signals
 
+from visualization.components.minimap import Minimap
+
 
 class RegionSelectWidget(QWidget):
     # Data
@@ -47,7 +49,10 @@ class RegionSelectWidget(QWidget):
         canvas_box_layout.addWidget(self.canvas)
         canvas_box.setLayout(canvas_box_layout)
 
-        layout.addWidget(canvas_box)
+        #layout.addWidget(canvas_box)
+
+        #mp = Minimap()
+        #layout.addWidget(mp)
 
         # 生成示例数组
         self.array = np.zeros((100, 100), dtype=int)
@@ -62,11 +67,11 @@ class RegionSelectWidget(QWidget):
         self.cmap = ListedColormap(self.temp_color_list)
 
         # global slots
-        signals.region_loaded.connect(self.on_region_loaded)
-        signals.seabed_loaded.connect(self.on_seabed_loaded)
-        signals.bounds_changed.connect(self.on_bounds_changed)
-        signals.frame_loaded.connect(self.on_frame_loaded)
-        signals.frame_rendering.connect(self.on_frame_rendering)
+        #signals.region_loaded.connect(self.on_region_loaded)
+        #signals.seabed_loaded.connect(self.on_seabed_loaded)
+        #signals.bounds_changed.connect(self.on_bounds_changed)
+        #signals.frame_loaded.connect(self.on_frame_loaded)
+        #signals.frame_rendering.connect(self.on_frame_rendering)
 
     # ========================================
     # slots functions
@@ -87,11 +92,11 @@ class RegionSelectWidget(QWidget):
         self.frame_index = frame_index
 
     def on_frame_rendering(self):
-        #print(time.time())
+        # print(time.time())
         self.preprocess()
-        #print(time.time())
+        # print(time.time())
         self.load_regions()
-        #print(time.time())
+        # print(time.time())
 
 
     def preprocess(self):

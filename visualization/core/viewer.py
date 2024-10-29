@@ -8,11 +8,13 @@ import numpy as np
 import scipy
 import vtk
 import os
+import math
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.util import numpy_support
 
 from common.entity import UniformGrid, DataFrame
 from visualization.core import doppler_processor, processor, reader
+from visualization.gui.signal_group import signals
 
 
 def to_vtk_image(image):
@@ -61,6 +63,41 @@ class ColorBarManager:
         self.adjust_position()
 
 
+class ViewerCamera(vtk.vtkInteractorStyleTrackballCamera):
+    def __init__(self):
+        super().__init__()
+        self.locked = True
+        self.save_dir = np.array([0, -1])
+
+        self.AddObserver(vtk.vtkCommand.LeftButtonPressEvent, self.new_left_button_down)
+        self.AddObserver(vtk.vtkCommand.LeftButtonReleaseEvent, self.new_left_button_up)
+        self.AddObserver(vtk.vtkCommand.MouseMoveEvent, self.new_mouse_move)
+
+    def new_left_button_down(self, obj, event):
+        self.OnLeftButtonDown()
+        self.locked = False
+
+    def new_left_button_up(self, obj, event):
+        self.OnLeftButtonUp()
+        self.locked = True
+
+    def new_mouse_move(self, obj, event):
+        self.OnMouseMove()
+        render = self.GetInteractor().GetRenderWindow().GetRenderers().GetFirstRenderer()
+        pos = render.GetActiveCamera().GetPosition()
+        focal = render.GetActiveCamera().GetFocalPoint()
+        direction = np.array([pos[0] - focal[0], pos[1] - focal[1]])
+
+        if not self.locked and np.linalg.norm(direction) > 0:
+            cos_angle = np.dot(direction, self.save_dir) / (np.linalg.norm(direction) * np.linalg.norm(self.save_dir))
+            angle = math.acos(min(cos_angle, 1.0))
+            sign = np.sign(np.cross(direction, self.save_dir))
+            self.save_dir = direction
+
+            #print('angle', sign * angle * 180 / math.pi)
+            signals.camera_rotated.emit(sign * angle * 180 / math.pi)
+
+
 class Viewer:
     # ------------------------------------------------------------
     # data
@@ -88,7 +125,7 @@ class Viewer:
 
     def create_interactor(self):
         self.interactor = QVTKRenderWindowInteractor()
-        self.interactor.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+        self.interactor.SetInteractorStyle(ViewerCamera())
         self.renderer = vtk.vtkRenderer()
         self.renderer.SetBackground(0.65, 0.65, 0.65)
         self.renderer.SetBackground2(0.3, 0.3, 0.3)
@@ -158,9 +195,9 @@ class Viewer:
             # self.axis_actor.SetXTitle('Easting of COVIS ( m )')
             # self.axis_actor.SetYTitle('Northing of COVIS ( m )')
             # self.axis_actor.SetZTitle('Height above COVIS base ( m )')
-            self.axis_actor.SetXTitle('X-Axis')
-            self.axis_actor.SetYTitle('Y-Axis')
-            self.axis_actor.SetZTitle('Z-Axis')
+            self.axis_actor.SetXTitle('X-Axis (m)')
+            self.axis_actor.SetYTitle('Y-Axis (m)')
+            self.axis_actor.SetZTitle('Z-Axis (m)')
             self.renderer.AddActor(self.axis_actor)
             self.axis_selected_flag = True
 

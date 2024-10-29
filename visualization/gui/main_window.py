@@ -32,11 +32,11 @@ class MainWindow(QMainWindow):
         center_layout.setSpacing(3)
 
         # center : declare widget
-        vtk_widget = VTKWidget()
+        self.vtk_widget = VTKWidget()
         control_widget = ControlWidget()
 
         # center : add widget
-        center_layout.addWidget(vtk_widget)
+        center_layout.addWidget(self.vtk_widget)
         center_layout.addWidget(control_widget)
 
         # right_widget:
@@ -50,3 +50,7 @@ class MainWindow(QMainWindow):
 
         # right : add children widget
         right_layout.addWidget(feature_widget)
+
+    def closeEvent(self, a0):
+        super().closeEvent(a0)
+        self.vtk_widget.close()
