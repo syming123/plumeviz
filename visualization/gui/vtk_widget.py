@@ -2,19 +2,15 @@ import numpy as np
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QHBoxLayout, QCheckBox
 
-from visualization.components.minimap import Minimap
+from visualization.gui.minimap import Minimap
 from visualization.core.viewer import Viewer
 from visualization.core import reader
-from visualization.gui.region_select_widget import RegionSelectWidget
 from visualization.gui.signal_group import signals
 
 from common.entity import DataFrame
 
 
 class VTKWidget(QWidget):
-    colormap_name = 'Smoke'
-    opacity = 0.0
-
     def __init__(self):
         super().__init__()
         layout = QGridLayout()
@@ -161,8 +157,8 @@ class VTKWidget(QWidget):
 
     def on_frame_rendering(self):
         #print('rendering: frame ', self.viewer.frame.time_str)
-        self.viewer.set_plumes_color_function(self.colormap_name)
-        self.viewer.set_plumes_opacity_function(self.opacity)
+        # self.viewer.set_plumes_color_function(self.colormap_name)
+        # self.viewer.set_plumes_opacity_function(self.opacity)
         self.repaint_frame()
         self.viewer.refresh()
 
@@ -244,8 +240,8 @@ class VTKWidget(QWidget):
 
     # 直接体渲染更改colormap时
     def on_colormap_changed(self, colormap_name: str):
-        self.colormap_name = colormap_name
-        self.viewer.set_plumes_color_function(colormap_name)
+        self.viewer.colormap_name = colormap_name
+        #self.viewer.set_plumes_color_function(colormap_name)
         if self.viewer.volume_selected_flag:
             self.viewer.volume_unselected()
             self.viewer.volume_selected()
@@ -253,8 +249,8 @@ class VTKWidget(QWidget):
 
     # 直接体渲染更改透明度时
     def on_opacity_changed(self, opacity: float):
-        self.opacity = opacity
-        self.viewer.set_plumes_opacity_function(opacity)
+        self.viewer.opacity = opacity
+        #self.viewer.set_plumes_opacity_function(opacity)
         if self.viewer.volume_selected_flag:
             self.viewer.volume_unselected()
             self.viewer.volume_selected()

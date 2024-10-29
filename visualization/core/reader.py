@@ -41,20 +41,11 @@ def read_seabed(file_path: str) -> UniformGrid:
 
 
 # colormap
-class ColorMap:
-    def __init__(self, colors):
-        self.colors = colors
-
-    def get_color(self, value):
-        return self.colors[int(value * (len(self.colors) - 1))]
-
-
-def load_colormap(filepath):
+def load_colormap(filepath) -> list:
     with open(filepath, 'r', encoding='utf-8') as file:
         json_str = file.read()
     json_data = json.loads(json_str)
     colors = []
     for color in json_data['ColorMap']:
         colors.append((color[0] / 255, color[1] / 255, color[2] / 255))
-    color_map = ColorMap(colors)
-    return color_map
+    return colors

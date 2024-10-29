@@ -2,8 +2,6 @@
 # 数据渲染，展示
 # ============================================================
 
-
-
 import numpy as np
 import scipy
 import vtk
@@ -116,6 +114,11 @@ class Viewer:
     interactor = None
     renderer = None
 
+    # ------------------------------------------------------------
+    # Volume Rendering Parameters
+    # ------------------------------------------------------------
+    opacity = 0.0
+    colormap_name = 'default'
 
     # ------------------------------------------------------------
     # initialization
@@ -389,80 +392,48 @@ class Viewer:
     # ------------------------------------------------------------
     volume_set = {}
     volume_selected_flag = False
-    plumes_color_function = vtk.vtkColorTransferFunction()
-    plumes_opacity_function = vtk.vtkPiecewiseFunction()
-
-    def set_plumes_color_function(self, color_type):
-        self.plumes_color_function = vtk.vtkColorTransferFunction()
-        range_v = [max(1e-9, np.min(self.frame.imaging.data)), max(1e-9, np.max(self.frame.imaging.data))]
-        log_v = [np.log10(range_v[0]), np.log10(range_v[1])]
-        log_dis = log_v[1] - log_v[0]
-
-        self.plumes_color_function.UsingLogScale()
-
-        # 预设的color map
-        if color_type == 'Smoke':
-            self.plumes_color_function.AddRGBPoint(2e-9, 1.0, 1.0, 1.0)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.2 * log_dis), 1.0, 1.0, 1.0)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.8 * log_dis), 1.0, 1.0, 1.0)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.93 * log_dis), 1.0, 0.2, 0.0)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.98 * log_dis), 1.0, 1.0, 0.0)
-        elif color_type == 'Fire':
-            self.plumes_color_function.AddRGBPoint(2e-9, 0.0, 0.0, 0.0)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.2 * log_dis), 1.0, 0.0, 0.0)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.7 * log_dis), 1.0, 0.2, 0.0)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.9 * log_dis), 1.0, 0.4, 0.0)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.95 * log_dis), 1.0, 1.0, 0.0)
-        elif color_type == 'Cool to Warm':
-            self.plumes_color_function.AddRGBPoint(2e-9, 0.0, 0.0, 0.5)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.7 * log_dis), 0.0, 0.0, 1.0)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.8 * log_dis), 1.0, 1.0, 1.0)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.9 * log_dis), 1.0, 0.0, 0.0)
-        elif color_type == 'Viridis':
-            self.plumes_color_function.AddRGBPoint(2e-9, 0.26, 0.00, 0.33)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.7 * log_dis), 0.19, 0.40, 0.55)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.75 * log_dis), 0.12, 0.60, 0.53)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.8 * log_dis), 0.42, 0.80, 0.35)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.9 * log_dis), 1.0, 0.90, 0.14)
-        elif color_type == 'Yellow':
-            self.plumes_color_function.AddRGBPoint(2e-9, 0.9, 0.9, 0.7)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.8 * log_dis), 1.0, 1.0, 0.6)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.93 * log_dis), 1.0, 1.0, 0.4)
-            self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + 0.98 * log_dis), 0.0, 0.0, 0.0)
-
-        # 从json文件中读取color map
-        colormaps = os.listdir('../res/colormap')
-        for cmap in colormaps:
-            cmap0 = os.path.splitext(cmap)[0]
-            if color_type == cmap0:
-                color_map = reader.load_colormap('../res/colormap/' + cmap)
-                color0 = color_map.get_color(0.0)
-                self.plumes_color_function.AddRGBPoint(2e-9, color0[0], color0[1], color0[2])
-                for i in range(11):
-                    color = color_map.get_color(i / 10)
-                    self.plumes_color_function.AddRGBPoint(np.power(10, log_v[0] + (0.4 + 0.6 * (i / 10)) * log_dis), color[0], color[1], color[2])
-
-
-    def set_plumes_opacity_function(self, opacity):
-        self.plumes_opacity_function = vtk.vtkPiecewiseFunction()
-        range_v = [max(1e-9, np.min(self.frame.imaging.data)), max(1e-9, np.max(self.frame.imaging.data))]
-        log_v = [np.log10(range_v[0]), np.log10(range_v[1])]
-        log_dis = log_v[1] - log_v[0]
-
-        self.plumes_opacity_function = vtk.vtkPiecewiseFunction()
-        self.plumes_opacity_function.UseLogScaleOn()
-        self.plumes_opacity_function.AddPoint(2e-9, 0)
-        self.plumes_opacity_function.AddPoint(np.power(10, log_v[0] + log_dis / 1.3), opacity)
-        self.plumes_opacity_function.AddPoint(range_v[1], min(opacity * 2.0, 1.0))
 
     def draw_volume(self, region_id):
         strid = str(region_id)
 
         if strid not in self.volume_set:
             image = self.imaging_bounds_cut(region_id)
+            image.data[image.data < 1e-6] = 1e-6
+            image.data = np.log10(image.data)
+            image.data = image.data + 6
 
             # to vtk file
             vtk_image = to_vtk_image(image)
+
+            # writer = vtk.vtkXMLImageDataWriter()
+            # writer.SetInputData(vtk_image)
+            # writer.SetFileName(os.path.join('1.vtk'))
+            # writer.Write()
+
+            # colormap and opacity function
+            range_v = vtk_image.GetScalarRange()
+            plumes_color_function = vtk.vtkColorTransferFunction()
+            if self.colormap_name == 'default':
+                ds = (range_v[1] - range_v[0]) / 4
+                plumes_color_function.AddRGBPoint(range_v[0], 1.0, 1.0, 1.0)
+                plumes_color_function.AddRGBPoint(range_v[0] + 2*ds/4, 0.9, 0.9, 0.6)
+                plumes_color_function.AddRGBPoint(range_v[0] + 3*ds/4, 0.9, 0.9, 0.4)
+                plumes_color_function.AddRGBPoint(range_v[1], 1.0, 1.0, 0.0)
+            else:
+                colormaps = os.listdir('../res/colormap')
+                for cmap in colormaps:
+                    cmap0 = os.path.splitext(cmap)[0]
+                    if self.colormap_name == cmap0:
+                        colormap = reader.load_colormap('../res/colormap/' + cmap)
+                        ds = (range_v[1] - range_v[0]) / len(colormap)
+                        for i in range(len(colormap)):
+                            color = colormap[i]
+                            plumes_color_function.AddRGBPoint(range_v[0] + ds*i, color[0], color[1], color[2])
+
+            plumes_opacity_function = vtk.vtkPiecewiseFunction()
+            plumes_opacity_function.AddPoint(range_v[0], 0)
+            plumes_opacity_function.AddPoint(range_v[1], self.opacity)
+
 
             # rendering
             volume_mapper = vtk.vtkGPUVolumeRayCastMapper()
@@ -471,20 +442,16 @@ class Viewer:
             volume_mapper.SetSampleDistance(0.05)
 
             volume_property = vtk.vtkVolumeProperty()
-            volume_property.SetColor(self.plumes_color_function)
-            volume_property.SetScalarOpacity(self.plumes_opacity_function)
+            volume_property.SetColor(plumes_color_function)
+            volume_property.SetScalarOpacity(plumes_opacity_function)
             volume_property.SetInterpolationTypeToLinear()
-            # volume_property.ShadeOn()
-            # volume_property.SetAmbient(0.4)
-            # volume_property.SetDiffuse(0.6)
-            # volume_property.SetSpecular(0.0)
 
             volume_actor = vtk.vtkVolume()
             volume_actor.SetMapper(volume_mapper)
             volume_actor.SetProperty(volume_property)
 
             if len(self.volume_set) == 0:
-                self.color_bars.add_bar(self.plumes_color_function, 'plume')
+                self.color_bars.add_bar(plumes_color_function, 'plume')
                 self.renderer.AddActor(self.color_bars.get_bar('plume'))
 
             self.renderer.AddActor(volume_actor)

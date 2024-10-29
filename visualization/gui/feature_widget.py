@@ -150,15 +150,10 @@ class VolumeWidget(FeatureItem):
                                         QComboBox {
                                             border: 1px solid #646464;
                                             border-radius: 3px;
-                                            
                                         }
                                       """)
 
-        self.color_combo.addItem('Smoke')
-        self.color_combo.addItem('Fire')
-        self.color_combo.addItem('Cool to Warm')
-        self.color_combo.addItem('Viridis')
-        self.color_combo.addItem('Yellow')
+        self.color_combo.addItem('default')
         colormaps = os.listdir('../res/colormap')
         for cmap in colormaps:
             cmap0 = os.path.splitext(cmap)[0]

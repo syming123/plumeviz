@@ -124,7 +124,7 @@ class ControlWidget(QWidget):
         def run():
             while self.playing:
                 self.next_click()
-                time.sleep(0.5)
+                time.sleep(0.1)
 
         if self.playing:
             self.playing = False
