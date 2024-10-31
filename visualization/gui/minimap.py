@@ -1,6 +1,7 @@
-# ================================================================================
+# ==========================================================================================
 # A new version minimap which can allow users to select region of interest.
-# ================================================================================
+# Compared to the previous version, this minimap can be rotated with the main view.
+# ==========================================================================================
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -46,6 +47,7 @@ class Minimap(QWidget):
     plane_actors = {}
     selected_region = []
     bounds = [-1000, 1000, -1000, 1000, -1000, 1000]
+    accumulate_angle = 0.0
 
     def __init__(self):
         super().__init__()
@@ -227,6 +229,7 @@ class Minimap(QWidget):
 
             trans = vtk.vtkTransform()
             trans.Translate(center[0], center[1], 0)
+            trans.RotateZ(-self.accumulate_angle)
             plane_actor.SetUserTransform(trans)
 
             self.region_actors[str(region.id)] = region_actor
@@ -237,6 +240,7 @@ class Minimap(QWidget):
 
 
     def rotate(self, angle):
+        self.accumulate_angle += angle
         self.renderer.GetActiveCamera().Roll(angle)
         for act in self.plane_actors.values():
             trans = act.GetUserTransform()

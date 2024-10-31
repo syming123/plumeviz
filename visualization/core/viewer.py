@@ -471,6 +471,8 @@ class Viewer:
         strid = str(region_id)
         if strid not in self.contour_set:
             region_grid = self.imaging_bounds_cut(region_id)
+            region_grid.data[region_grid.data < 1e-7] = 1e-7
+            region_grid.data = np.log10(region_grid.data) + 6
             vtk_image = processor.to_vtk_image3d(region_grid)
 
             contour = vtk.vtkContourFilter()
@@ -482,10 +484,10 @@ class Viewer:
 
             len_v = len(contour_values)
             x = [0, 1, 2]
-            r = [131, 86, 0]
-            g = [168, 115, 0]
-            b = [230, 200, 255]
-            a = [0.2, 0.15, 0.1]
+            r = [131, 0, 76]
+            g = [168, 0, 0]
+            b = [230, 180, 158]
+            a = [0.2, 0.2, 0.2]
             r_func = scipy.interpolate.interp1d(x, r)
             g_func = scipy.interpolate.interp1d(x, g)
             b_func = scipy.interpolate.interp1d(x, b)

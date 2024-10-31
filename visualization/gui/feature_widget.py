@@ -509,7 +509,7 @@ class ContourWidget(FeatureItem):
         layout.addWidget(slider_widget)
         layout.addWidget(table_widget)
 
-        self.slider.valueChanged.connect(self.sliderValueChanged)
+        self.slider.valueChanged.connect(self.slider_value_changed)
 
         signals.frame_loaded.connect(self.on_frame_loaded)
 
@@ -520,29 +520,24 @@ class ContourWidget(FeatureItem):
         self.init_slider_range(data)
 
 
-    def sliderValueChanged(self):
+    def slider_value_changed(self):
         self.slider_value = self.slider.value()
+        true_value = 10**(self.slider_value / 100 - 6)
+        self.text_right.setText("{:.6f}".format(true_value))
 
-        temp = math.tan(self.slider_value / 100) / 100
-        true_value = math.pow(10, self.exponent) * temp
-
-        self.text_right.setText("{:.7f}".format(true_value))
 
     def init_slider_range(self, data):
-        #data = config.dataset.imaging.data
-        max_value = np.max(data)
-        min_value = np.min(data)
+        min_data_value = np.min(data)
+        max_data_value = np.max(data)
+        min_value = math.log10(max(1e-6, min_data_value)) + 6
+        max_value = math.log10(max(1e-6, max_data_value)) + 6
 
-        self.exponent = math.floor(math.log10(max_value))
-        scaled_value = max_value / math.pow(10, self.exponent)
+        min_show = int(min_value * 100)
+        max_show = int(max_value * 100)
 
-        min_show = int(math.atan(min_value))
-        max_show = int(math.atan(scaled_value * 100) * 100)
-
-        self.slider.setMinimum(min_show)
-        self.slider.setMaximum(max_show)
+        self.slider.setRange(min_show, max_show)
         self.slider.setValue(min_show)
-        self.slider.setSingleStep(1)
+
 
     def slider_btn_clicked(self):
 
@@ -585,7 +580,7 @@ class ContourWidget(FeatureItem):
         # 打印所有 QLineEdit 的文本
         values = []
         for i, text in enumerate(texts, start=1):
-            values.append(float(text))
+            values.append(math.log10(float(text)) + 6)
         signals.contour_value_changed.emit(values)
 
 
