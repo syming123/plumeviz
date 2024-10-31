@@ -8,29 +8,10 @@ import vtk
 import os
 import math
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from vtkmodules.util import numpy_support
 
 from common.entity import UniformGrid, DataFrame
 from visualization.core import doppler_processor, processor, reader
 from visualization.gui.signal_group import signals
-
-
-def to_vtk_image(image):
-    data = image.data
-    bounds = image.bounds
-    spacing = image.spacing
-    vtk_image = vtk.vtkImageData()
-    vtk_image.SetDimensions(data.shape)
-    vtk_image.SetSpacing(spacing[0], spacing[1], spacing[2])
-    vtk_image.SetOrigin(bounds[0], bounds[2], bounds[4])
-
-    data = data.astype(np.float32)
-    data = data.transpose(2, 1, 0)
-    vtk_array = numpy_support.numpy_to_vtk(data.ravel(), deep=True, array_type=vtk.VTK_FLOAT)
-    vtk_array.SetNumberOfComponents(1)
-    vtk_array.SetName("data")
-    vtk_image.GetPointData().SetScalars(vtk_array)
-    return vtk_image
 
 
 class ColorBarManager:
@@ -403,7 +384,7 @@ class Viewer:
             image.data = image.data + 6
 
             # to vtk file
-            vtk_image = to_vtk_image(image)
+            vtk_image = processor.to_vtk_image3d(image)
 
             # writer = vtk.vtkXMLImageDataWriter()
             # writer.SetInputData(vtk_image)
@@ -490,7 +471,7 @@ class Viewer:
         strid = str(region_id)
         if strid not in self.contour_set:
             region_grid = self.imaging_bounds_cut(region_id)
-            vtk_image = to_vtk_image(region_grid)
+            vtk_image = processor.to_vtk_image3d(region_grid)
 
             contour = vtk.vtkContourFilter()
             contour.SetInputData(vtk_image)
@@ -841,7 +822,7 @@ class Viewer:
             heat_flux.data = H_field
 
             # to vtk file
-            vtk_heat_flux = to_vtk_image(heat_flux)
+            vtk_heat_flux = processor.to_vtk_image3d(heat_flux)
 
             # color and opacity function
             range_v = vtk_heat_flux.GetScalarRange()

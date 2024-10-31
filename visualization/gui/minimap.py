@@ -4,7 +4,6 @@
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from vtkmodules.util import numpy_support
 import vtk
 import numpy as np
 import time, os
@@ -12,41 +11,6 @@ import time, os
 from common.entity import UniformGrid, DataFrame
 from visualization.gui.signal_group import signals
 from visualization.core import processor
-
-
-def to_vtk_image2d(grid):
-    data = grid.data
-    bounds = grid.bounds
-    spacing = grid.spacing
-    vtk_image = vtk.vtkImageData()
-    vtk_image.SetDimensions((data.shape[0], data.shape[1], 1))
-    vtk_image.SetSpacing(spacing[0], spacing[1], 1)
-    vtk_image.SetOrigin(bounds[0], bounds[2], 0)
-
-    data = data.astype(np.float32)
-    data = data.transpose(1, 0)
-    vtk_array = numpy_support.numpy_to_vtk(data.ravel(), deep=True, array_type=vtk.VTK_FLOAT)
-    vtk_array.SetNumberOfComponents(1)
-    vtk_array.SetName("data")
-    vtk_image.GetPointData().SetScalars(vtk_array)
-    return vtk_image
-
-def to_vtk_image3d(grid):
-    data = grid.data
-    bounds = grid.bounds
-    spacing = grid.spacing
-    vtk_image = vtk.vtkImageData()
-    vtk_image.SetDimensions(data.shape)
-    vtk_image.SetSpacing(spacing[0], spacing[1], spacing[2])
-    vtk_image.SetOrigin(bounds[0], bounds[2], bounds[4])
-
-    data = data.astype(np.float32)
-    data = data.transpose(2, 1, 0)
-    vtk_array = numpy_support.numpy_to_vtk(data.ravel(), deep=True, array_type=vtk.VTK_FLOAT)
-    vtk_array.SetNumberOfComponents(1)
-    vtk_array.SetName("data")
-    vtk_image.GetPointData().SetScalars(vtk_array)
-    return vtk_image
 
 
 class MinimapCamera(vtk.vtkInteractorStyleTrackballCamera):
@@ -79,8 +43,9 @@ class Minimap(QWidget):
     frame = DataFrame()
     frame_index = 0
     region_actors = {}
+    plane_actors = {}
     selected_region = []
-    bounds = []
+    bounds = [-1000, 1000, -1000, 1000, -1000, 1000]
 
     def __init__(self):
         super().__init__()
@@ -121,7 +86,7 @@ class Minimap(QWidget):
         plane.SetNormal(0.0, 0.0, 1.0)
 
         texture_reader = vtk.vtkPNGReader()
-        texture_reader.SetFileName('../res/icons/north_rotate.png')
+        texture_reader.SetFileName('../res/icons/north.png')
         texture = vtk.vtkTexture()
         texture.SetInputConnection(texture_reader.GetOutputPort())
         texture_map = vtk.vtkTextureMapToPlane()
@@ -132,6 +97,7 @@ class Minimap(QWidget):
         plane_actor = vtk.vtkActor()
         plane_actor.SetMapper(plane_mapper)
         plane_actor.SetTexture(texture)
+        plane_actor.RotateZ(-90)
 
         self.ori_widget = vtk.vtkOrientationMarkerWidget()
         self.ori_widget.SetOutlineColor(1.0, 1.0, 1.0)
@@ -140,20 +106,6 @@ class Minimap(QWidget):
         self.ori_widget.SetViewport(0.8, 0.8, 0.95, 0.95)
         self.ori_widget.SetEnabled(1)
         self.ori_widget.InteractiveOff()
-
-        # text_actor = vtk.vtkTextActor()
-        # text_actor.SetInput('123')
-        # text_actor.GetProperty().SetColor(1.0, 0.0, 0.0)
-        # text_widget = vtk.vtkTextWidget()
-        # text_widget.SetInteractor(self.interactor)
-        # text_widget.SetTextActor(text_actor)
-        # rep = vtk.vtkTextRepresentation()
-        # rep.GetPositionCoordinate().SetValue(0.15, 0.15)
-        # rep.GetPosition2Coordinate().SetValue(0.7, 0.2)
-        # text_widget.SetRepresentation(rep)
-        # text_widget.SelectableOff()
-        # text_widget.On()
-        # #self.renderer.AddActor(text_actor)
 
         self.seafloor_actor = None
 
@@ -174,11 +126,9 @@ class Minimap(QWidget):
 
     def load_seafloor(self, seafloor: UniformGrid):
         self.seafloor = seafloor
-        #self.draw_seafloor()
 
     def draw_seafloor(self):
-        #print(time.time())
-        vtk_image = to_vtk_image2d(processor.cut_uniform(self.seafloor, self.bounds))
+        vtk_image = processor.to_vtk_image2d(processor.cut_uniform(self.seafloor, self.bounds))
         data_range = vtk_image.GetScalarRange()
 
         contour = vtk.vtkContourFilter()
@@ -199,7 +149,6 @@ class Minimap(QWidget):
         self.seafloor_actor = vtk.vtkActor()
         self.seafloor_actor.SetMapper(contour_mapper)
         self.renderer.AddActor(self.seafloor_actor)
-        #print(time.time())
 
 
     def load_region(self, regions: list, marks: np.ndarray):
@@ -209,19 +158,22 @@ class Minimap(QWidget):
 
     def load_frame(self, frame: DataFrame, group_index: int, frame_index: int, group_size: int):
         self.frame = frame
-        #self.draw_frame()
+        self.frame_index = frame_index
+        self.draw_frame()
 
 
     def draw_frame(self):
         imaging = self.frame.imaging.copy()
+
+        # remove all plume regions and labels
         for act in self.region_actors.values():
+            self.renderer.RemoveActor(act)
+        for act in self.plane_actors.values():
             self.renderer.RemoveActor(act)
 
         mark = self.marks[self.frame_index]
         self.mark_slice = np.max(mark, axis=2)
         for region in self.regions:
-            if region.bounds[0] != 0 or region.bounds[1] != 132:
-                continue
             region_grid = UniformGrid()
             region_grid.bounds = region.bounds[2:]
             for i in range(6):
@@ -238,29 +190,30 @@ class Minimap(QWidget):
             region_marks[region_marks != region.id] = 0
             region_grid.data = region_marks
 
-            vtk_region = to_vtk_image3d(region_grid)
+            vtk_region = processor.to_vtk_image3d(region_grid)
             contour = vtk.vtkContourFilter()
             contour.SetInputData(vtk_region)
             contour.SetValue(0, region.id)
 
             mapper = vtk.vtkPolyDataMapper()
             mapper.SetInputConnection(contour.GetOutputPort())
-            mapper.SetLookupTable(self.unselected_color)
+            if region.id not in self.selected_region:
+                mapper.SetLookupTable(self.unselected_color)
+            else:
+                mapper.SetLookupTable(self.selected_color)
             region_actor = vtk.vtkActor()
             region_actor.SetMapper(mapper)
 
 
             center = [(region_grid.bounds[0] + region_grid.bounds[1])/2, (region_grid.bounds[2] + region_grid.bounds[3])/2]
-            plane_r = 2.5
-            center[1] = center[1] + plane_r
             plane = vtk.vtkPlaneSource()
-            plane.SetOrigin(center[0] - plane_r, center[1] - plane_r, 100.0)
-            plane.SetPoint1(center[0] + plane_r, center[1] - plane_r, 100.0)
-            plane.SetPoint2(center[0] - plane_r, center[1] + plane_r, 100.0)
+            plane.SetOrigin(-2.5, -5, 100.0)
+            plane.SetPoint1(-2.5, 5, 100.0)
+            plane.SetPoint2(2.5, -5, 100.0)
             plane.SetNormal(0.0, 0.0, 1.0)
 
             texture_reader = vtk.vtkPNGReader()
-            texture_reader.SetFileName('../res/icons/locate1.png')
+            texture_reader.SetFileName('../res/icons/locate2.png')
             texture = vtk.vtkTexture()
             texture.SetInputConnection(texture_reader.GetOutputPort())
             texture_map = vtk.vtkTextureMapToPlane()
@@ -272,15 +225,22 @@ class Minimap(QWidget):
             plane_actor.SetMapper(plane_mapper)
             plane_actor.SetTexture(texture)
 
-            self.renderer.AddActor(plane_actor)
+            trans = vtk.vtkTransform()
+            trans.Translate(center[0], center[1], 0)
+            plane_actor.SetUserTransform(trans)
 
             self.region_actors[str(region.id)] = region_actor
+            self.plane_actors[str(region.id)] = plane_actor
             self.renderer.AddActor(region_actor)
+            self.renderer.AddActor(plane_actor)
         self.refresh()
 
 
     def rotate(self, angle):
         self.renderer.GetActiveCamera().Roll(angle)
+        for act in self.plane_actors.values():
+            trans = act.GetUserTransform()
+            trans.RotateZ(-angle)
         self.refresh()
 
 
@@ -310,7 +270,6 @@ class Minimap(QWidget):
 
     def refresh(self):
         self.interactor.GetRenderWindow().Render()
-
 
 
     def closeEvent(self, a0):

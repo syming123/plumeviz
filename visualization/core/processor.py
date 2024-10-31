@@ -4,9 +4,49 @@
 
 import numpy as np
 import queue
+import vtk
+from vtkmodules.util import numpy_support
 from scipy.optimize import curve_fit
 
 from common.entity import DataFrame, UniformGrid
+
+
+# ------------------------------------------------------------
+# 数据转换
+# ------------------------------------------------------------
+def to_vtk_image2d(grid):
+    data = grid.data
+    bounds = grid.bounds
+    spacing = grid.spacing
+    vtk_image = vtk.vtkImageData()
+    vtk_image.SetDimensions((data.shape[0], data.shape[1], 1))
+    vtk_image.SetSpacing(spacing[0], spacing[1], 1)
+    vtk_image.SetOrigin(bounds[0], bounds[2], 0)
+
+    data = data.astype(np.float32)
+    data = data.transpose(1, 0)
+    vtk_array = numpy_support.numpy_to_vtk(data.ravel(), deep=True, array_type=vtk.VTK_FLOAT)
+    vtk_array.SetNumberOfComponents(1)
+    vtk_array.SetName("data")
+    vtk_image.GetPointData().SetScalars(vtk_array)
+    return vtk_image
+
+def to_vtk_image3d(grid):
+    data = grid.data
+    bounds = grid.bounds
+    spacing = grid.spacing
+    vtk_image = vtk.vtkImageData()
+    vtk_image.SetDimensions(data.shape)
+    vtk_image.SetSpacing(spacing[0], spacing[1], spacing[2])
+    vtk_image.SetOrigin(bounds[0], bounds[2], bounds[4])
+
+    data = data.astype(np.float32)
+    data = data.transpose(2, 1, 0)
+    vtk_array = numpy_support.numpy_to_vtk(data.ravel(), deep=True, array_type=vtk.VTK_FLOAT)
+    vtk_array.SetNumberOfComponents(1)
+    vtk_array.SetName("data")
+    vtk_image.GetPointData().SetScalars(vtk_array)
+    return vtk_image
 
 
 # ------------------------------------------------------------
