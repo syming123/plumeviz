@@ -72,12 +72,12 @@ def calculate_region3d(datas, threshold=1e-6, interval=4):
 
 def region_filter(regions, marks, threshold=100):
     new_regions = []
-    mask = np.zeros(marks.shape, np.bool)
+    mask = np.zeros(marks.shape, np.uint8)
     for region in regions:
         if region.count > threshold and region.bounds[0] == 0 and region.bounds[1] == marks.shape[0] - 1:
             new_regions.append(region)
-            mask[marks == region.id] = True
+            mask[marks == region.id] = 1
 
-    marks[mask == False] = 0
+    marks[mask == 0] = 0
     return new_regions, marks
 
