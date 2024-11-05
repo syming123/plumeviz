@@ -397,9 +397,9 @@ class Viewer:
             if self.colormap_name == 'default':
                 ds = (range_v[1] - range_v[0]) / 4
                 plumes_color_function.AddRGBPoint(range_v[0], 1.0, 1.0, 1.0)
-                plumes_color_function.AddRGBPoint(range_v[0] + 2*ds/4, 0.9, 0.9, 0.6)
-                plumes_color_function.AddRGBPoint(range_v[0] + 3*ds/4, 0.9, 0.9, 0.4)
-                plumes_color_function.AddRGBPoint(range_v[1], 1.0, 1.0, 0.0)
+                plumes_color_function.AddRGBPoint(range_v[0] + 2*ds/4, 1.0, 1.0, 0.9)
+                plumes_color_function.AddRGBPoint(range_v[0] + 3*ds/4, 1.0, 1.0, 0.7)
+                plumes_color_function.AddRGBPoint(range_v[1], 1.0, 1.0, 0.4)
             else:
                 colormaps = os.listdir('../res/colormap')
                 for cmap in colormaps:

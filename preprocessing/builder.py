@@ -147,6 +147,7 @@ def build_all(file_dir: str, target_dir: str):
 
 
 if __name__ == '__main__':
-    #build_all('../data/mat/20210509', '../data/processed/20210509')
-    build_all('../data/mat/20130522', '../data/processed/20130522')
+    #build_all('../data/mat/20200816', '../data/processed/20200816')
+    build_all('../data/mat/20211010', '../data/processed/20211010')
+    build_all('../data/mat/20141009', '../data/processed/20141009')
 

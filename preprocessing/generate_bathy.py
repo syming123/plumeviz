@@ -18,14 +18,15 @@ def scale_data(data, target_size):
 
 
 if __name__ == '__main__':
-    with open('../data/filtered_data_all.npy', 'rb') as file:
+    with open('../res/bathy/filtered_data_all.npy', 'rb') as file:
         points = joblib.load(file)
         data = np.zeros((51, 51))
         weight = np.zeros((51, 51))
     for p in points:
-        if -44 < p[0] < 6 and -38 < p[1] < 12:
+        #if -44 < p[0] < 6 and -38 < p[1] < 12:
+        if -41 < p[0] < 9 and -38 < p[1] < 12:
             print(p)
-            x = (p[0] + 44)
+            x = (p[0] + 41)
             y = (p[1] + 38)
             z = p[2]
             ii = [
