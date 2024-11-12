@@ -53,7 +53,7 @@ Go to the website mentioned before and download the COVIS data.
 
  COVIS data include three kind of data: imaging, diffuse, doppler. Doppler data can only be downloaded for data from 2010 to 2015. To make sure preprocessing tool work well, you should download all needed data in a full day. In this case we download all imaging and diffuse data on May 9th, 2021, and we put them on a single folder. ( We don't need to download doppler data because it's missing from 2018 to 2023.)
 
-<img src="./doc/images/file_list.png" style="zoom: 33%;" />
+<img src="./doc/images/file_list.png" align="left" style="width: 35%;" />
 
 #### Preprocessing
 
