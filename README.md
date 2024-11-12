@@ -1,12 +1,10 @@
 # PlumeViz
 
-An interactive system for exploring multi-facet features of hydrothermal plumes in sonar images
+An interactive system for exploring multi-facet features of hydrothermal plumes in sonar images.
 
-![](./doc/images/1.png)
+Project Home Page: https://syming123.github.io/plumeviz/
 
-
-
-![](./doc/images/2.png)
+![](./doc/images/overview.png)
 
 
 
@@ -55,7 +53,7 @@ Go to the website mentioned before and download the COVIS data.
 
  COVIS data include three kind of data: imaging, diffuse, doppler. Doppler data can only be downloaded for data from 2010 to 2015. To make sure preprocessing tool work well, you should download all needed data in a full day. In this case we download all imaging and diffuse data on May 9th, 2021, and we put them on a single folder. ( We don't need to download doppler data because it's missing from 2018 to 2023.)
 
-![](./doc/images/file_list.png)
+<img src="./doc/images/file_list.png" style="zoom: 33%;" />
 
 #### Preprocessing
 

@@ -738,6 +738,11 @@ class FileWidget(QWidget):
     def add_files(self):
         # 创建file group
         index_file_path = QFileDialog.getOpenFileName(self, 'Open File', '../data/processed', 'Index File (index.bin)')[0]
+
+        # 防止未选取文件时程序崩溃
+        if index_file_path == '':
+            return
+
         group = self.FileGroup()
         group.file_dir = os.path.dirname(index_file_path)
         group.file_names, group.region_name = reader.read_index(index_file_path)
