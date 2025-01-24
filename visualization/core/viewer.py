@@ -1,6 +1,7 @@
 # ============================================================
 # 数据渲染，展示
 # ============================================================
+from math import log10
 
 import numpy as np
 import scipy
@@ -814,6 +815,9 @@ class Viewer:
             imaging_cut = self.imaging_bounds_cut(region_id)
             doppler_cut = self.doppler_bounds_cut(imaging_cut, self.frame.doppler)
 
+            # convert Doppler Data unit from cm to m
+            doppler_cut.data = doppler_cut.data * 0.01
+
             v_field, centerline = doppler_processor.get_velocity_field(imaging_cut, doppler_cut)
             H, H_field = doppler_processor.get_heat_flux_field(v_field, centerline)
 
@@ -821,28 +825,50 @@ class Viewer:
             H_field[H_field <= 0] = 1e-9
 
             heat_flux = doppler_cut.copy()
-            heat_flux.data = H_field
+            heat_flux.data = np.log10(H_field)
+            heat_flux.data[heat_flux.data < 0] = 0
 
             # to vtk file
             vtk_heat_flux = processor.to_vtk_image3d(heat_flux)
 
             # color and opacity function
-            range_v = vtk_heat_flux.GetScalarRange()
-            log_v = [np.log10(range_v[0]), np.log10(range_v[1])]
-            log_dis = log_v[1] - log_v[0]
+
+            # range_v = vtk_heat_flux.GetScalarRange()
+            # range_dis = range_v[1] - range_v[0]
+            # log_v = [np.log10(range_v[0]), np.log10(range_v[1])]
+            # log_dis = log_v[1] - log_v[0]
+            max_v = np.max(heat_flux.data)
 
             color_func = vtk.vtkColorTransferFunction()
-            color_func.UsingLogScale()
-            color_func.AddRGBPoint(2e-9, 0.0, 0.0, 0.5)
-            color_func.AddRGBPoint(np.power(10, log_v[0] + 0.9 * log_dis), 0.0, 0.0, 1.0)
-            color_func.AddRGBPoint(np.power(10, log_v[0] + 0.94 * log_dis), 0.0, 1.0, 0.0)
-            color_func.AddRGBPoint(np.power(10, log_v[0] + 0.95 * log_dis), 1.0, 1.0, 0.0)
-            color_func.AddRGBPoint(np.power(10, log_v[0] + 0.96 * log_dis), 1.0, 0.0, 0.0)
+            # color_func.UsingLogScale()
+            # color_func.AddRGBPoint(2e-9, 0.0, 0.0, 0.5)
+            # color_func.AddRGBPoint(np.power(10, log_v[0] + 0.9 * log_dis), 0.0, 0.0, 1.0)
+            # color_func.AddRGBPoint(np.power(10, log_v[0] + 0.94 * log_dis), 0.0, 1.0, 0.0)
+            # color_func.AddRGBPoint(np.power(10, log_v[0] + 0.95 * log_dis), 1.0, 1.0, 0.0)
+            # color_func.AddRGBPoint(np.power(10, log_v[0] + 0.96 * log_dis), 1.0, 0.0, 0.0)
+
+            colormap = reader.load_colormap('../res/colormap/rainbow.json')
+            ds = max_v / len(colormap)
+            for i in range(len(colormap)):
+                color = colormap[i]
+                color_func.AddRGBPoint(ds * i, color[0], color[1], color[2])
+
+            color_func.AddRGBPoint(0, 0.0, 0.0, 1.0)
+            color_func.AddRGBPoint(max_v*0.5, 0.0, 1.0, 0.0)
+            color_func.AddRGBPoint(max_v*0.6, 1.0, 1.0, 0.0)
+            color_func.AddRGBPoint(max_v, 1.0, 0.0, 0.0)
 
             opacity_func = vtk.vtkPiecewiseFunction()
-            opacity_func.UseLogScaleOn()
-            opacity_func.AddPoint(np.power(10, log_v[0] + 0.88 * log_dis), 0)
-            opacity_func.AddPoint(range_v[1], 0.8)
+            #opacity_func.UseLogScaleOn()
+
+            opacity_func.AddPoint(0, 0)
+            opacity_func.AddPoint(max_v, 0.8)
+
+           # opacity_func.UseLogScaleOn()
+            # opacity_func.AddPoint(np.power(10, log_v[0] + 0.8 * log_dis), 0)
+            # opacity_func.AddPoint(range_v[1], 0.8)
+            # opacity_func.AddPoint(range_v[1]*0.01, 0)
+            # opacity_func.AddPoint(range_v[1]*0.1, 1.0)
 
             if len(self.heat_flux_set) == 0:
                 self.color_bars.add_bar(color_func, 'heat flux')
