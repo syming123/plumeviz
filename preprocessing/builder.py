@@ -1,12 +1,21 @@
 import os
+import sys
 import numpy as np
 import joblib
-import time
+import argparse
+
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from common.entity import DataFrame
 from preprocessing import load_from_mat
 from preprocessing import region_detector
 
+
+def get_parameters():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input_dir', '-i', required=True, help='path for input data')
+    parser.add_argument('--output_dir', '-o', required=True, help='path for output data')
+    return parser.parse_args()
 
 # 从指定目录中读取所有mat数据文件
 def load_data(file_dir: str) -> list[DataFrame]:
@@ -147,7 +156,6 @@ def build_all(file_dir: str, target_dir: str):
 
 
 if __name__ == '__main__':
-    #build_all('../data/mat/20200816', '../data/processed/20200816')
-    build_all('../data/mat/20211010', '../data/processed/20211010')
-    build_all('../data/mat/20141009', '../data/processed/20141009')
+    args = get_parameters()
+    build_all(args.input_dir, args.output_dir)
 

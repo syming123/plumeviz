@@ -235,6 +235,12 @@ class Viewer:
             texture_map = vtk.vtkTextureMapToPlane()
             texture_map.SetInputConnection(smooth_filter.GetOutputPort())
 
+            # writer = vtk.vtkXMLPolyDataWriter()
+            # writer.SetInputConnection(self.seabed_actor.GetOutputPort())
+            # writer.SetFileName('seafloor2.vtk')
+            # writer.Write()
+
+
             mapper = vtk.vtkPolyDataMapper()
             mapper.SetInputConnection(texture_map.GetOutputPort())
 
@@ -244,6 +250,7 @@ class Viewer:
             self.seabed_actor.GetProperty().SetColor(0.7, 0.85, 0.9)
             self.renderer.AddActor(self.seabed_actor)
             self.seabed_selected_flag = True
+
 
     def remove_seabed(self):
         if self.seabed_selected_flag:
